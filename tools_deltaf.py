@@ -78,15 +78,16 @@ def writer_inputs(file_log,incr,filename_out):
     for p in enumerate(pos):
         foutname = os.path.splitext(file_log)[0]
         index = p[0]
-        with open(foutname + '_' + str(index) + '_P.com', 'w') as fo:
+        with open(foutname + '_P_' + str(index) + '.com', 'w') as fo:
             fo.write('%schk=oscillatorgrad%s \n' %('%',index))
             fo.write('%nproc=4 \n')
             fo.write('%mem=4gb \n')
             ###LEVEL OF THEORY
-            fo.write('#p B3LYP/6-31+g** geom=allcheck guess=read TD=(Nstates=20) Nosymm GFinput \n')
+            fo.write('#p B3LYP/6-31+g** TD=(Nstates=20) Nosymm GFinput \n')
             fo.write(' \n')
             fo.write('METAL \n')
             fo.write(' \n')
+            fo.write('0 1 \n')
             for row in  p[1]:
                  fo.write('%s %s \n' %(row[0], ' '.join(map(str,row[1])) ))
             fo.write(' \n')
@@ -94,23 +95,25 @@ def writer_inputs(file_log,incr,filename_out):
     for n in enumerate(neg):
         foutname_n = os.path.splitext(file_log)[0]
         index = n[0]
-        with open(foutname_n + '_' + str(index) + '_N.com', 'w') as fon:
+        with open(foutname_n + '_N_' + str(index) + '.com', 'w') as fon:
             fon.write('%schk=oscillatorgrad%s \n' %('%',index))
             fon.write('%nproc=4 \n')
             fon.write('%mem=4gb \n')
             ###LEVEL OF THEORY
-            fon.write('#p B3LYP/6-31+g** geom=allcheck guess=read TD=(Nstates=20) Nosymm GFinput \n')
+            fon.write('#p B3LYP/6-31+g** TD=(Nstates=20) Nosymm GFinput \n')
             fon.write(' \n')
             fon.write('METAL \n')
             fon.write(' \n')
+            fon.write('0 1 \n')
             for rown in  n[1]:
                  fon.write('%s %s \n' %(rown[0], ' '.join(map(str,rown[1])) ))
             fon.write(' \n')
 
-
-
-
-
-
     return
+
+
+
+
+
+
 
