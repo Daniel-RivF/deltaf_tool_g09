@@ -70,7 +70,7 @@ def increment_geoms(filename,incr):
     return (a, Z, incrementlist_P, incrementlist_N)
 
 
-def writer_inputs(file_log,incr,filename_out):
+def writer_inputs(file_log,incr):
     data = increment_geoms(file_log,incr)[1:]
     Z, incrementlist_P, incrementlist_N = data[0], data[1], data[2]
     pos = [zip(i,j.tolist()) for i,j  in zip(Z,incrementlist_P)]
@@ -78,7 +78,8 @@ def writer_inputs(file_log,incr,filename_out):
     for p in enumerate(pos):
         foutname = os.path.splitext(file_log)[0]
         index = p[0]
-        with open(foutname + '_P_' + str(index) + '.com', 'w') as fo:
+        index3 = '%03d' % index
+        with open(foutname + '_P_' + str(index3) + '.com', 'w') as fo:
             fo.write('%schk=oscillatorgrad%s \n' %('%',index))
             fo.write('%nproc=4 \n')
             fo.write('%mem=4gb \n')
@@ -95,7 +96,8 @@ def writer_inputs(file_log,incr,filename_out):
     for n in enumerate(neg):
         foutname_n = os.path.splitext(file_log)[0]
         index = n[0]
-        with open(foutname_n + '_N_' + str(index) + '.com', 'w') as fon:
+        index3 = '%03d' % index
+        with open(foutname_n + '_N_' + str(index3) + '.com', 'w') as fon:
             fon.write('%schk=oscillatorgrad%s \n' %('%',index))
             fon.write('%nproc=4 \n')
             fon.write('%mem=4gb \n')
@@ -113,7 +115,70 @@ def writer_inputs(file_log,incr,filename_out):
 
 
 
+###################################
+##### Now working with outputs:
+###################################
+
+def extract_f(filename):
+    first = 'Excitation energies and oscillator strengths'
+    second = 'Copying SCF densities to generalized density'
+    a = parser(filename,first,second)
+    b = [ i.split()[8][2:] for i in a if 'Excited State' in i]
+    c = np.array(map(float,b))
+    return c
+
+#filelist_N = sorted(glob.glob('*N*.com'))
+
+def gradient_f(incr):
+    filelist_N = sorted(glob.glob('*_N*.log'))
+    filelist_P = sorted(glob.glob('*_P*.log'))
+    f_Ns = []
+    for i in filelist_N:
+        fN = extract_f(i)
+        f_Ns.append(fN)
+    f_Ps = []
+    for j in filelist_P:
+        fP = extract_f(j)
+        f_Ps.append(fP)
+    list_gradf = []
+    for i,j in zip(f_Ps,f_Ns):
+        #Gradient calculation, retunrns fot all of the NStates:
+        a = (i-j)/(2*incr)
+        list_gradf.append(a)
+    return list_gradf
 
 
+
+def states_gradf(filename,list_gradf,state):
+    geom = extractgeom(filename)[0]
+    Z = extractgeom(filename)[1]
+    Natom = len(Z)
+#Tratar list_gradf para escribirla mejor, better in chunks of 3
+    state_gradf = []
+    for i in list_gradf:
+        state_gradf.append(i[state-1])
+
+####    moldenfileformat
+    filevector = 'gradient_f' + str(state) + '.vector.molden'
+    with open(filevector,'w') as fv:
+        fv.write('[Molden Format]  \n')
+        fv.write(' [GEOMETRIES] (XYZ)  \n')
+        fv.write('%s \n' % Natom)
+        fv.write('  \n')
+        ####GEOMETRY (loop)###
+        for i,ii in zip(Z,geom):
+            fv.write('%s %s' % (i,' '.join(map(str,ii))))
+        fv.write('%s \n' % Natom)
+        fv.write('  \n')
+        ######geometry Vector (loop,again) #######
+        for k,kk in zip(Z,geom):
+            fv.write('%s %s' % (k,' '.join(map(str,kk))))
+        fv.write(' [FORCES] \n')
+        fv.write('point     1 \n')
+        ###### gradf Vector (loop) #######
+        #for z in list_gradf
+        fv.write('%s \n' % Natom)
+        fv.write('   \n')
+    return state_gradf
 
 
