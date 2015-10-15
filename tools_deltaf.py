@@ -148,37 +148,60 @@ def gradient_f(incr):
     return list_gradf
 
 
+######################################
+################ Chunks of list #######
+######################################
+def chunks(l, n):
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]
 
-def states_gradf(filename,list_gradf,state):
+def Z_to_atomsymbol(listZ):
+    for index,z in enumerate(listZ):
+        if z == 6:
+            listZ[index] = 'C'
+        elif z == 8:
+            listZ[index] = 'O'
+        elif z == 1:
+            listZ[index] = 'H'
+        elif z == 7:
+            listZ[index] = 'N'
+    return listZ
+
+def states_gradf(filename,list_gradf,states):
     geom = extractgeom(filename)[0]
-    Z = extractgeom(filename)[1]
+    Z = Z_to_atomsymbol(extractgeom(filename)[1])
     Natom = len(Z)
 #Tratar list_gradf para escribirla mejor, better in chunks of 3
-    state_gradf = []
-    for i in list_gradf:
-        state_gradf.append(i[state-1])
-
+#states as a list of integers i.e [2,5,6,12]
+    states_gradf = []
+    for i in states:
+        a = [j[i-1] for j in list_gradf]
+        states_gradf.append(a)
+    for state,gradf in zip(states,states_gradf):
+        filevector = 'gradient_f' + str(state) + '.vector.molden'
+        gradient_i = list(chunks(gradf, 3))
 ####    moldenfileformat
-    filevector = 'gradient_f' + str(state) + '.vector.molden'
-    with open(filevector,'w') as fv:
-        fv.write('[Molden Format]  \n')
-        fv.write(' [GEOMETRIES] (XYZ)  \n')
-        fv.write('%s \n' % Natom)
-        fv.write('  \n')
-        ####GEOMETRY (loop)###
-        for i,ii in zip(Z,geom):
-            fv.write('%s %s' % (i,' '.join(map(str,ii))))
-        fv.write('%s \n' % Natom)
-        fv.write('  \n')
-        ######geometry Vector (loop,again) #######
-        for k,kk in zip(Z,geom):
-            fv.write('%s %s' % (k,' '.join(map(str,kk))))
-        fv.write(' [FORCES] \n')
-        fv.write('point     1 \n')
-        ###### gradf Vector (loop) #######
-        #for z in list_gradf
-        fv.write('%s \n' % Natom)
-        fv.write('   \n')
-    return state_gradf
+        with open(filevector,'w') as fv:
+            fv.write('[Molden Format]  \n')
+            fv.write(' [GEOMETRIES] (XYZ)  \n')
+            fv.write('%s \n' % Natom)
+            fv.write('  \n')
+            ####GEOMETRY (loop)###
+            for i,ii in zip(Z,geom):
+                fv.write('%s   %s \n' % (i,' '.join(map(str,ii))))
+            fv.write('%s \n' % Natom)
+            fv.write('  \n')
+            ######geometry Vector (loop,again) #######
+            for k,kk in zip(Z,geom):
+                fv.write('%s %s \n' % (k,' '.join(map(str,kk))))
+            fv.write(' [FORCES] \n')
+            fv.write('point     1 \n')
+            fv.write('%s \n' % Natom)
+            ###### gradf Vector (loop) #######
+            for v in gradient_i:
+                fv.write('%s  \n' % ' '.join(map(str,v)))
+            #for z in list_gradf
+            fv.write('   \n')
+    return  
 
 
