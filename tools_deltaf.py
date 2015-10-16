@@ -70,7 +70,7 @@ def increment_geoms(filename,incr):
     return (a, Z, incrementlist_P, incrementlist_N)
 
 
-def writer_inputs(file_log,incr):
+def writer_inputs(file_log,incr,route_sect):
     data = increment_geoms(file_log,incr)[1:]
     Z, incrementlist_P, incrementlist_N = data[0], data[1], data[2]
     pos = [zip(i,j.tolist()) for i,j  in zip(Z,incrementlist_P)]
@@ -84,7 +84,7 @@ def writer_inputs(file_log,incr):
             fo.write('%nproc=4 \n')
             fo.write('%mem=4gb \n')
             ###LEVEL OF THEORY
-            fo.write('#p B3LYP/6-31+g** TD=(Nstates=20) Nosymm GFinput \n')
+            fo.write('%s \n' % route_sect)
             fo.write(' \n')
             fo.write('METAL \n')
             fo.write(' \n')
@@ -102,7 +102,7 @@ def writer_inputs(file_log,incr):
             fon.write('%nproc=4 \n')
             fon.write('%mem=4gb \n')
             ###LEVEL OF THEORY
-            fon.write('#p B3LYP/6-31+g** TD=(Nstates=20) Nosymm GFinput \n')
+            fon.write('%s \n' % route_sect)
             fon.write(' \n')
             fon.write('METAL \n')
             fon.write(' \n')
