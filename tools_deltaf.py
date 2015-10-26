@@ -132,6 +132,7 @@ def extract_f(filename):
 def gradient_f(incr):
     filelist_N = sorted(glob.glob('*_N*.log'))
     filelist_P = sorted(glob.glob('*_P*.log'))
+    print(zip(filelist_P,filelist_N))
     f_Ns = []
     for i in filelist_N:
         fN = extract_f(i)
