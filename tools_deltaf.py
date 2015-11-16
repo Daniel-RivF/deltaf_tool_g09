@@ -199,8 +199,12 @@ def states_gradf(filename,list_gradf,states):
             fv.write('point     1 \n')
             fv.write('%s \n' % Natom)
             ###### gradf Vector (loop) #######
+            po = []
             for v in gradient_i:
-                fv.write('%s  \n' % ' '.join(map(str,v)))
+                p = ["{0:.15f}".format(t) for t in v]
+                po.append(p)
+            for vv in po:
+                fv.write('%s  \n' % ' '.join(map(str,vv)))
             #for z in list_gradf
             fv.write('   \n')
     return  
